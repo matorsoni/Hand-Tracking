@@ -25,7 +25,7 @@ class leapImageThread(threading.Thread):
         self.newFrame = False
         self.timeoutTimer = time.time()
         self.timeout = timeout
-        self.calibration = None; #retrieveLeapCalibration(self.cam, self.resolution)
+        self.calibration = None #retrieveLeapCalibration(self.cam, self.resolution)
         self.cameras = ['left', 'right']
         self.running = False
         self.doYUYConversion = source == cv2.CAP_DSHOW # Not implemented!
