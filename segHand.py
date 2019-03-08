@@ -27,7 +27,7 @@ def segHand(imInput):
 	# Threshold of distance
 	threshVal, _ = cv.threshold(imDist, 200, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 	_, imDistThresh = cv.threshold(imDist, round(2.5*threshVal), 255, cv.THRESH_BINARY)
-	print("Distance threshold: ", round(2.5*threshVal))
+	# print("Distance threshold: ", round(2.5*threshVal))
 
 	# Background marker
 	SE = cv.getStructuringElement(cv.MORPH_ELLIPSE, (15,15))
@@ -47,5 +47,5 @@ def segHand(imInput):
 
 	cv.watershed(cv.cvtColor(imFiltered, cv.COLOR_GRAY2BGR), markers)
 
-	return np.uint8(10*markers)
-	# return imDistThresh
+	return np.uint8(markers)
+	# return imOpening
