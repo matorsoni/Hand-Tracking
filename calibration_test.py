@@ -1,11 +1,19 @@
 import numpy as np
 import cv2
 
-dist = np.load("cam_dist.npy")
-mtx = np.load("cam_matrix.npy")
-
 img_dir = "/home/morsoni/dev/python/venvs/py2/projects/Hand-Tracking/chess/"
-im_original = cv2.imread(img_dir + "chess_13_L.png", cv2.IMREAD_GRAYSCALE)
+file_name = "chess_3_L.png"
+im_original = cv2.imread(img_dir + file_name, cv2.IMREAD_GRAYSCALE)
+
+if file_name[-5] == "L":
+    dist = np.load("cam_dist_L.npy")
+    mtx = np.load("cam_matrix_L.npy")
+elif file_name[-5] == "R":
+    dist = np.load("cam_dist_L.npy")
+    mtx = np.load("cam_matrix_L.npy")
+else: 
+    dist = np.zeros(1)
+    mtx = np.zeros(1)
 
 im_undistorted = cv2.undistort(im_original, mtx, dist)
 cv2.imshow("original", im_original)

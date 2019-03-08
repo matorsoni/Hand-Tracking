@@ -2,6 +2,10 @@ import numpy as np
 import cv2
 import glob
 
+
+camera = "L"
+#camera = "R"
+
 # termination criteria
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
@@ -15,7 +19,7 @@ objp *= square_side
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
-images = glob.glob('/home/morsoni/dev/python/venvs/py2/projects/Hand-Tracking/chess/*.png')
+images = glob.glob("/home/morsoni/dev/python/venvs/py2/projects/Hand-Tracking/chess/*" + camera + ".png")
 
 for fname in images:
     img = cv2.imread(fname)
@@ -38,7 +42,8 @@ for fname in images:
 
 cv2.destroyAllWindows()
 
+
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 
-np.save("cam_dist", dist)
-np.save("cam_matrix", mtx)
+np.save("cam_dist_" + camera, dist)
+np.save("cam_matrix_" + camera, mtx)

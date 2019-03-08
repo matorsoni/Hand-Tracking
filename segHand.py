@@ -15,18 +15,19 @@ def segHand(imInput):
 	# Otsu Threshold
 	_, imThreshold = cv.threshold(imSharp, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
 
-	# Opening to remove noise created from sharpening and separate elements
-	#SE = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5,5) ) 
-	#imOpening = cv.erode(imThreshold, SE)
-	#imOpening = cv.dilate(imOpening, SE)
-	imOpening = imThreshold
+	# Erosion to remove fingers
+	SE = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5,5) ) 
+	imErode = cv.erode(imThreshold, SE)
+	imOpening = cv.dilate(imErode, SE)
 
 	# Distance transformation
 	imDist = cv.distanceTransform(imOpening, cv.DIST_L2, cv.DIST_MASK_3)
 	imDist = np.uint8(cv.normalize(imDist, imDist, 0, 255, cv.NORM_MINMAX))
 
 	# Threshold of distance
-	_, imDistThresh = cv.threshold(imDist, 120, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
+	threshVal, _ = cv.threshold(imDist, 200, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+	_, imDistThresh = cv.threshold(imDist, round(2.5*threshVal), 255, cv.THRESH_BINARY)
+	print("Distance threshold: ", round(2.5*threshVal))
 
 	# Background marker
 	SE = cv.getStructuringElement(cv.MORPH_ELLIPSE, (15,15))
@@ -39,10 +40,12 @@ def segHand(imInput):
 	for i in range(len(contours)):
 	    cv.drawContours(markers, contours, i, (i+1), -1)
 
+	# print(np.amax(markers))
+
 	# All markers
 	markers += extMarker
 
 	cv.watershed(cv.cvtColor(imFiltered, cv.COLOR_GRAY2BGR), markers)
 
-	#return np.uint8(10*markers)
-	return imDist
+	return np.uint8(10*markers)
+	# return imDistThresh

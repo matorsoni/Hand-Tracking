@@ -1,6 +1,7 @@
 import cv2, sys, ctypes, numpy as np
 sys.path.insert(0, "./lib")
 import Leap
+from segHand import *
 
 controller = Leap.Controller()
 controller.set_policy(Leap.Controller.POLICY_IMAGES)
@@ -31,6 +32,11 @@ while((not (cv2.waitKey(1) & 0xFF == ord('q')))):
 
             cv2.imshow('Frame L', left_image)
             cv2.imshow('Frame R', right_image)
+
+            cv2.imshow('Segmentation L', segHand(left_image))
+            cv2.imshow('Segmentation R', segHand(right_image))
+
+
 
             # save images L and R
             if cv2.waitKey(30) == ord('s') :
