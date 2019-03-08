@@ -64,6 +64,9 @@ def find_closest_point(leftRay, rightRay):
     return 0.5 * (leftRay.point(t1) + rightRay.point(t2))
 
 def CamCoord_to_LeapCoord(position):
+    '''
+    Position in left camera coordinates to Leap coordinates
+    '''
     return position
 
 
