@@ -1,6 +1,5 @@
 import cv2, sys, ctypes, numpy as np
-sys.path.insert(0, "./lib")
-import Leap
+
 from segHand import *
 
 controller = Leap.Controller()
@@ -13,19 +12,20 @@ while((not (cv2.waitKey(1) & 0xFF == ord('q')))):
 
     if(controller.is_connected):
         frame = controller.frame()
-        image_list = frame.images
+        left_image, right_image = frame.images
 
-        if(image_list[0].is_valid and image_list[1].is_valid):
-            # allocate images as np.array
+        if(left_image.is_valid and right_image.is_valid):
+            # first allocate images as ctypes array
             # https://developer-archive.leapmotion.com/documentation/python/api/Leap.Image.html#Leap.Image.data_pointer
-            left_ctype_array_def = ctypes.c_ubyte * image_list[0].width * image_list[0].height
-            right_ctype_array_def = ctypes.c_ubyte * image_list[1].width * image_list[1].height
-            # first as ctypes array
-            left_ctype_array = left_ctype_array_def.from_address(int(image_list[0].data_pointer))
-            right_ctype_array = right_ctype_array_def.from_address(int(image_list[1].data_pointer))
+            left_ctype_array_def = ctypes.c_ubyte * left_image.width * left_image.height
+            left_ctype_array = left_ctype_array_def.from_address(int(left_image.data_pointer))
+
+            right_ctype_array_def = ctypes.c_ubyte * right_image.width * right_image.height
+            right_ctype_array = right_ctype_array_def.from_address(int(right_image.data_pointer))
+
             # them as numpy array
-            left_image = np.ctypeslib.as_array(left_ctype_array)
-            right_image = np.ctypeslib.as_array(right_ctype_array)
+            left_image_array = np.ctypeslib.as_array(left_ctype_array)
+            right_image_array = np.ctypeslib.as_array(right_ctype_array)
             
             # https://developer-archive.leapmotion.com/documentation/python/api/Leap.Image.html#Leap.Image.distortion
             
@@ -46,8 +46,8 @@ while((not (cv2.waitKey(1) & 0xFF == ord('q')))):
 
             #left_pixel_list = [ (x1,y1),(x2,y2) ...]; right_pixel_list = [...]
             #for left_pixel, right_pixel in zip(left_pixel_list, right_pixel_list) : 
-            #   left_slopes = image_list[0].rectify(Leap.vector(left_pixel[0], left_pixel[1], 0))
-            #   right_slopes = image_list[1].rectify(Leap.vector(right_pixel[0], right_pixel[1], 0))  
+            #   left_slopes = left_image.rectify(Leap.vector(left_pixel[0], left_pixel[1], 0))
+            #   right_slopes = right_image.rectify(Leap.vector(right_pixel[0], right_pixel[1], 0))  
             #
             #   o1 = np.zeros(3); v1 = np.array() # origin and direction of left light ray
             #   o2 = np.array(); v2 = np.array() # origin and direction of right light ray
