@@ -1,37 +1,54 @@
 import numpy as np
+import sys
+
 sys.path.insert(0, "./lib")
 import Leap
 
 class Ray:
-    def __init__(self, origin, direction):
+    def __init__(self, origin = np.zeros(3), direction = np.array([1,0,0])):
         self.origin = origin
         self.direction = direction
     
     def point(self, t):
         return self.origin + t * self.direction
-    
+
     def v(self):
         return self.direction
-    
+
     def o(self):
         return self.origin
 
-def direction_from_pixel(image: Leap.Image, pixel):
-    slope = image.rectify(Leap.Vector(pixel[0], pixel[1], 0))
-    x_angle = np.arctan(slope.x)
-    y_angle = np.arctan(slope.y)
+def direction_from_pixel(image, pixel):
+    '''
+    Corrects distortion for this specific pixel and returns its light ray direction.
+    image: Leap.Image ; pixel: (int, int)
 
-    x = np.cos(y_angle) * np.sin(x_angle)
-    y = np.sin(y_angle)
-    z = - np.cos(y_angle) * np.cos(x_angle)
+    https://developer-archive.leapmotion.com/documentation/python/api/Leap.Image.html#Leap.Image.distortion
+    '''
+    if (pixel[0] >= 0 and pixel[0] <= image.width and pixel[1] >= 0 and pixel[1] <= image.height) :
+        slope = image.rectify(Leap.Vector(pixel[0], pixel[1], 0))
+        x_angle = np.arctan(slope.x)
+        y_angle = np.arctan(slope.y)
 
-    return np.array([x, y, z])
+        x = np.cos(y_angle) * np.sin(x_angle)
+        y = np.sin(y_angle)
+        z = - np.cos(y_angle) * np.cos(x_angle)
 
-def find_closest_point(leftRay: Ray, rightRay: Ray):
+        return np.array([x, y, z])
+    
+    else :
+        print "Pixel not in image"
+        return np.zeros(3)
+
+def find_closest_point(leftRay, rightRay):
+    '''
+    Simple triangulation to find the point closest to leftRay and rightRay
+    leftRay: Ray ; rightRay: Ray
+    '''
     # translation vector from left camera to right camera
-    T = rightRay.o - leftRay.o
-    v1 = leftRay.v
-    v2 = rightRay.v
+    T = rightRay.o() - leftRay.o()
+    v1 = leftRay.v()
+    v2 = rightRay.v()
 
     # solve linear system to find t1 and t2 such that
     # rightRay(t2)-leftRay(t1) is orthogonal to both v1 and v2
@@ -44,12 +61,16 @@ def find_closest_point(leftRay: Ray, rightRay: Ray):
     t1, t2 = np.linalg.solve(A, b)
 
     # returns the mid point between leftRay(t1) and rightRay(t2)
-    return 0.5 * (leftRay(t1) + rightRay(t2))
+    return 0.5 * (leftRay.point(t1) + rightRay.point(t2))
 
 def CamCoord_to_LeapCoord(position):
+    return position
 
 
-def find_position(leftImage: Leap.Image, rightImage: Leap.Image,  pixelPairList, inLeapCoord = False):
+def find_position(leftImage, rightImage, pixelPairList, inLeapCoord = False):
+    '''
+    leftImage: Leap.Image ; rightImage: Leap.Image ; pixelPairList: list ; inLeapCoord: bool
+    '''
     # List of 3D positions in the Leap Motion coordinate system
     # https://developer-archive.leapmotion.com/documentation/v2/python/devguide/Leap_Overview.html#coordinate-system
     position_list = []
