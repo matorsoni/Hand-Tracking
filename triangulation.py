@@ -72,8 +72,8 @@ def CamCoord_to_LeapCoord(posCam):
         | 0  1  0  0   |
         | 0  0  0  1   |
     '''
-    dx = 
-    dy = 
+    dx = 2.5 # maybe change these
+    dy = 0.5
     T_transp = np.array([
         [-1,  0, 0, 0],
         [0,   0, 1, 0],
