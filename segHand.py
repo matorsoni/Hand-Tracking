@@ -26,7 +26,7 @@ def segHand(imInput):
 
 	# Threshold of distance
 	threshVal, _ = cv.threshold(imDist, 200, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-	_, imDistThresh = cv.threshold(imDist, round(2.5*threshVal), 255, cv.THRESH_BINARY)
+	_, imDistThresh = cv.threshold(imDist, round(threshVal), 255, cv.THRESH_BINARY)
 	# print("Distance threshold: ", round(2.5*threshVal))
 
 	# Background marker

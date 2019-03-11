@@ -89,4 +89,4 @@ def detectFingers(imInput):
 	    for point in hull:
 	        cv.circle(imContours,tuple(point[0]), 5, (255,0,0), 2)
 
-	return imContours
+	return imContours, hulls
