@@ -63,11 +63,26 @@ def find_closest_point(leftRay, rightRay):
     # returns the mid point between leftRay(t1) and rightRay(t2)
     return 0.5 * (leftRay.point(t1) + rightRay.point(t2))
 
-def CamCoord_to_LeapCoord(position):
+def CamCoord_to_LeapCoord(posCam):
     '''
     Position in left camera coordinates to Leap coordinates
+    T ([P]camera) = [P]leap
+    T = |-1  0  0  dx  |
+        | 0  0 -1  -dy |
+        | 0  1  0  0   |
+        | 0  0  0  1   |
     '''
-    return position
+    dx = 
+    dy = 
+    T_transp = np.array([
+        [-1,  0, 0, 0],
+        [0,   0, 1, 0],
+        [0,  -1, 0, 0],
+        [dx, -dy, 0, 1]
+    ])
+    posLeap = np.dot(np.append(posCam,1), T_transp)
+
+    return np.array([posLeap[0], posLeap[1], posLeap[2]])
 
 
 def find_position(leftImage, rightImage, pixelPairList, inLeapCoord = False):
@@ -91,9 +106,9 @@ def find_position(leftImage, rightImage, pixelPairList, inLeapCoord = False):
         estimated_position = find_closest_point(leftRay, rightRay)
 
         if inLeapCoord:
-            print "tranform this coordinates"
-
-        position_list.append(estimated_position)
+            position_list.append(CamCoord_to_LeapCoord(estimated_position))
+        else:
+            position_list.append(estimated_position)
     
     return position_list
 

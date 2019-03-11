@@ -1,4 +1,4 @@
-import cv2, sys, ctypes
+import sys, ctypes
 
 from triangulation import *
 from segHand import *
@@ -7,11 +7,11 @@ from detectFingers import *
 def find_xmin(hull):
     xlist = []
     for p in hull:
-        xlist.append(p[0])
-    print(xlist)
+        xlist.append(p[0][0])
+
     xmin = min(xlist)
     for i, p in enumerate(hull):
-        if p[0] == xmin:
+        if p[0][0] == xmin:
             return i
 
 
@@ -21,7 +21,7 @@ controller.set_policy(Leap.Controller.POLICY_IMAGES)
 # change accordingly
 save_dir = "/home/morsoni/dev/python/venvs/py2/projects/hand-tracking/images/"
 
-while((not (cv2.waitKey(1) & 0xFF == ord('q')))):
+while((not (cv.waitKey(1) & 0xFF == ord('q')))):
     
     if(controller.is_connected):
         frame = controller.frame()
@@ -49,25 +49,24 @@ while((not (cv2.waitKey(1) & 0xFF == ord('q')))):
                 leftHull = left_hulls[0]
                 rightHull = right_hulls[0]
 
-                #i = find_xmin(leftHull)
-                #j = find_xmin(rightHull)
-
-                #pos_list = find_position( left_image, right_image, [(leftHull[i],rightHull[j])] )
-                #print (pos_list)
-
+                i = find_xmin(leftHull)
+                j = find_xmin(rightHull)
+                pos_list = find_position( left_image, right_image, [(leftHull[i][0],rightHull[j][0])] )
+                print (pos_list)
 
 
-            cv2.imshow('Fingers L', left_fingers)
-            cv2.imshow('Fingers R', right_fingers)
+
+            cv.imshow('Fingers L', left_fingers)
+            cv.imshow('Fingers R', right_fingers)
 
 
 
 
 
             # save images L and R
-            #if cv2.waitKey(30) == ord('s') :
-            #    cv2.imwrite(save_dir + "raw_" + str(frame.id) + "_L.png", left_image)
-            #    cv2.imwrite(save_dir + "raw_" + str(frame.id) + "_R.png", right_image)
+            #if cv.waitKey(30) == ord('s') :
+            #    cv.imwrite(save_dir + "raw_" + str(frame.id) + "_L.png", left_image)
+            #    cv.imwrite(save_dir + "raw_" + str(frame.id) + "_R.png", right_image)
             #    print "Frame captured"
 
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
