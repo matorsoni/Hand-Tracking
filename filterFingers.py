@@ -28,7 +28,7 @@ def filterFingers(contour, defect):
 
         # Threshold parameters
         fingerMaxAngle = 40
-        minDefect = 7000
+        minDefect = 3500 #7000
 
         if cosAngle(point, d1, d2) > np.cos(fingerMaxAngle*np.pi/180) and (di1 > minDefect or di2 > minDefect):
             fingerIndices.append( [defect[i][0][0] ] )

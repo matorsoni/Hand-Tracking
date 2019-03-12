@@ -26,7 +26,8 @@ def direction_from_pixel(image, pixel):
     https://developer-archive.leapmotion.com/documentation/python/api/Leap.Image.html#Leap.Image.distortion
     '''
     if (pixel[0] >= 0 and pixel[0] <= image.width and pixel[1] >= 0 and pixel[1] <= image.height) :
-        slope = image.rectify(Leap.Vector(pixel[0], pixel[1], 0))
+        leapVec = Leap.Vector(float(pixel[0]), float(pixel[1]), float(0))
+        slope = image.rectify(leapVec)
         x_angle = np.arctan(slope.x)
         y_angle = np.arctan(slope.y)
 
@@ -96,11 +97,13 @@ def find_position(leftImage, rightImage, pixelPairList, inLeapCoord = False):
     for leftPixel, rightPixel in pixelPairList:
         # We calculate the light rays in the left camera coordinate system
         leftOrigin = np.zeros(3)
-        leftDirection = direction_from_pixel(leftImage, leftPixel)
+
+        leftDirection = direction_from_pixel(leftImage, leftPixel[0])
         leftRay = Ray(leftOrigin, leftDirection)
 
         rightOrigin = np.array([4, 0, 0]) # in cm
-        rightDirection = direction_from_pixel(rightImage, rightPixel)
+
+        rightDirection = direction_from_pixel(rightImage, rightPixel[0])
         rightRay = Ray(rightOrigin, rightDirection)
 
         estimated_position = find_closest_point(leftRay, rightRay)
