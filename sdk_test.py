@@ -39,10 +39,10 @@ while((not (cv2.waitKey(1) & 0xFF == ord('q')))):
 
 
             # save images L and R
-            if cv2.waitKey(30) == ord('s') :
-                cv2.imwrite(save_dir + "raw_" + str(frame.id) + "_L.png", left_image)
-                cv2.imwrite(save_dir + "raw_" + str(frame.id) + "_R.png", right_image)
-                print "Frame captured"
+            # if cv2.waitKey(30) == ord('s') :
+            #     cv2.imwrite(save_dir + "raw_" + str(frame.id) + "_L.png", left_image)
+            #     cv2.imwrite(save_dir + "raw_" + str(frame.id) + "_R.png", right_image)
+            #     print "Frame captured"
 
             #left_pixel_list = [ (x1,y1),(x2,y2) ...]; right_pixel_list = [...]
             #for left_pixel, right_pixel in zip(left_pixel_list, right_pixel_list) : 
