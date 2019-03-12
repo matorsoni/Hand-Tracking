@@ -1,92 +1,66 @@
 import cv2 as cv
 import numpy as np
-from segHand import *
-
-def dist(p1,p2):
-    return np.sqrt( (p1[0][0]-p2[0][0])**2 + (p1[0][1]-p2[0][1])**2 )
-
-def removeArray(L,arr):
-    ind = 0
-    size = len(L)
-    while ind != size and not np.array_equal(L[ind],arr):
-        ind += 1
-    if ind != size:
-        L.pop(ind)
-    else:
-        raise ValueError('array not found in list.')
-
-def partition(originalPoints, distFun, maxDist):
-    points = list(originalPoints) # Points to be trated
-    
-    # List of all partitions
-    partitionList = []
-    
-    # While there are still points to be treated
-    while len(points) > 0:
-
-        # Add first element
-        p1 = points.pop(0)
-        partition = [p1]
-        added = [p1]
-
-        # Search elements that belong to same partition 
-        while added:
-            p1 = added.pop(0)
-                   
-            # Search all elements close to p1
-            peers = []
-            for p in points:
-                if distFun(p1,p) <= maxDist:
-                    peers.append(p)
-            
-            added += peers
-            partition += peers
-            
-            # Remove newly added points from original list
-            for a in peers:
-                removeArray(points,a)
-            
-        # Add partition to the list
-        partitionList.append(partition)
-    
-    return partitionList
+from segHand import segHand
+from filterHull import filterHull
+from filterFingers import filterFingers
 
 def detectFingers(imInput):
-	# Color copy of input
-	imColor = cv.cvtColor(imInput, cv.COLOR_GRAY2BGR)
+    # Color copy of input
+    imColor = cv.cvtColor(imInput, cv.COLOR_GRAY2BGR)
 
-	# Binary image from segmented objects
-	imSegmented = segHand(imInput)
-	_, imBinary = cv.threshold(imSegmented, 254, 255, cv.THRESH_BINARY_INV)
+    # Binary image from segmented objects
+    imSegmented = segHand(imInput)
+    _, imBinary = cv.threshold(imSegmented, 254, 255, cv.THRESH_BINARY_INV)
 
-	# Find contours
-	contours, _ = cv.findContours(imBinary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-	imContours = imColor.copy()
-	cv.drawContours(imContours, contours, -1, (0,0,255), 2)
+    # Find contours
+    allContours, _ = cv.findContours(imBinary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    imContours = imColor.copy()
 
-	# Convex Hull
-	# hulls = []
-	# for contour in contours:
-	#     hulls.append(cv.convexHull(contour, False))
+    # Convexity analysis
+    contours = []
+    hulls = []
+    defects = []
+    fingers = []
+    for contour in allContours:
+        hullIndices = cv.convexHull(contour, None, False, False) # Calculate convex hulls
+        hullIndices = filterHull(contour,hullIndices,10) # Clusters close points together
+
+        defectList = cv.convexityDefects(contour, hullIndices) # Calculates convexity defects
+        # print("Defects:", defectList)
+        if defectList is not None:
+            fingerIndices = filterFingers(contour, defectList) # Identifies which points are fingers
+            # print("Fingers:", fingerIndices)
+            if len(fingerIndices) == 5:
+                contours.append(contour)
+                hulls.append(np.array( [contour[i[0]] for i in hullIndices] ) )
+                defects.append(np.array( [contour[d[0][2] ] for d in defectList]) )
+                fingers.append(np.array( [contour[i[0]] for i in fingerIndices] ) )
 
 
-	hulls = []
-	for contour in contours:
-		hull = cv.convexHull(contour, False)
-		part = partition(hull,dist,10)
+    # Sort finger order
+    fingerList = []
+    if len(fingers) == 1:
+        fingerList = np.array(sorted(list(fingers[0]), key = lambda x: x[0][0] ) )
+        # print(fingerList)
 
-		meanPoints = []
-		for p in part:
-			meanPoints.append( [list(map(int,np.round(np.mean(p,0))[0] ) )] )
-			# meanPoints.append( [list(map(int, ) )] )   np.int(np.round(np.mean(p,0))[0])
-		hulls.append(np.array(meanPoints))
-    
+    # Drawings
+    # cv.drawContours(imContours, contours, -1, (0,0,255), 2) # Hand contour
+    # cv.drawContours(imContours, hulls, -1, (0,255,0), 2) # Convex Hull
+    # for hull in hulls:
+    #     for point in hull:
+    #         cv.circle(imContours,tuple(point[0]), 5, (255,255,0), 2) # Finger candidates
+    # for defect in defects:
+    #     for point in defect:
+    #         cv.circle(imContours,tuple(point[0]), 5, (255,0,255), 2) # Convex defects
+    for finger in fingers:
+        for point in finger:
+            cv.circle(imContours,tuple(point[0]), 5, (255,0,0), 2) # Fingers
+
+    return fingerList, imContours
 
 
+# imInput = cv.imread("images/raw_1_L.png", cv.IMREAD_GRAYSCALE)
 
-	cv.drawContours(imContours, hulls, -1, (0,255,0), 2)
-	for hull in hulls:
-	    for point in hull:
-	        cv.circle(imContours,tuple(point[0]), 5, (255,0,0), 2)
-
-	return imContours, hulls
+# cv.imshow('Image', detectFingers(imInput))
+# cv.waitKey(0)
+# cv.destroyAllWindows()
