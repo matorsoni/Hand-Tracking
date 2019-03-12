@@ -51,7 +51,7 @@ while((not (cv.waitKey(1) & 0xFF == ord('q')))):
 
                 i = find_xmin(leftHull)
                 j = find_xmin(rightHull)
-                pos_list = find_position( left_image, right_image, [(leftHull[i][0],rightHull[j][0])] )
+                pos_list = find_position( left_image, right_image, [(leftHull[i][0],rightHull[j][0])], True )
                 print (pos_list)
 
 
