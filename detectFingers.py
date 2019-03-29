@@ -23,14 +23,14 @@ def detectFingers(imInput):
     fingers = []
     for contour in allContours:
         hullIndices = cv.convexHull(contour, None, False, False) # Calculate convex hulls
-        hullIndices = filterHull(contour,hullIndices,10) # Clusters close points together
+        hullIndices = filterHull(contour,hullIndices,8) # Clusters close points together
 
         defectList = cv.convexityDefects(contour, hullIndices) # Calculates convexity defects
         # print("Defects:", defectList)
         if defectList is not None:
             fingerIndices = filterFingers(contour, defectList) # Identifies which points are fingers
             # print("Fingers:", fingerIndices)
-            if len(fingerIndices) == 5:
+            if len(fingerIndices) >= 4:
                 contours.append(contour)
                 hulls.append(np.array( [contour[i[0]] for i in hullIndices] ) )
                 defects.append(np.array( [contour[d[0][2] ] for d in defectList]) )
@@ -39,19 +39,19 @@ def detectFingers(imInput):
 
     # Sort finger order
     fingerList = []
-    if len(fingers) == 1:
+    if len(fingers) == 1 and len(fingers[0]) == 5:
         fingerList = np.array(sorted(list(fingers[0]), key = lambda x: x[0][0] ) )
         # print(fingerList)
 
     # Drawings
-    # cv.drawContours(imContours, contours, -1, (0,0,255), 2) # Hand contour
-    # cv.drawContours(imContours, hulls, -1, (0,255,0), 2) # Convex Hull
+    #cv.drawContours(imContours, contours, -1, (0,0,255), 2) # Hand contour
+    cv.drawContours(imContours, hulls, -1, (0,255,0), 2) # Convex Hull
     # for hull in hulls:
     #     for point in hull:
     #         cv.circle(imContours,tuple(point[0]), 5, (255,255,0), 2) # Finger candidates
-    # for defect in defects:
-    #     for point in defect:
-    #         cv.circle(imContours,tuple(point[0]), 5, (255,0,255), 2) # Convex defects
+    for defect in defects:
+        for point in defect:
+            cv.circle(imContours,tuple(point[0]), 5, (255,0,255), 2) # Convex defects
     for finger in fingers:
         for point in finger:
             cv.circle(imContours,tuple(point[0]), 5, (255,0,0), 2) # Fingers
